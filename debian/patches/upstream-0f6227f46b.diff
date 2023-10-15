@@ -1,0 +1,42 @@
+commit 0f6227f46b1d33476ef448682a2ba0b0290e6d9b
+Author: Nicholas Marriott <nicholas.marriott@gmail.com>
+Date:   Thu Jun 2 20:41:21 2022 +0000
+
+    When deleting or renaming a buffer and a buffer name is specified,
+    complain if the buffer doesn't exist instead of silently deleting or
+    renaming the most recent buffer. GitHub issue 3205.
+
+diff --git a/cmd-set-buffer.c b/cmd-set-buffer.c
+index 9112683fc0..c9ffe5edad 100644
+--- a/cmd-set-buffer.c
++++ b/cmd-set-buffer.c
+@@ -69,8 +69,13 @@ cmd_set_buffer_exec(struct cmd *self, struct cmdq_item *item)
+ 		pb = paste_get_name(bufname);
+ 
+ 	if (cmd_get_entry(self) == &cmd_delete_buffer_entry) {
+-		if (pb == NULL)
++		if (pb == NULL) {
++			if (bufname != NULL) {
++				cmdq_error(item, "unknown buffer: %s", bufname);
++				return (CMD_RETURN_ERROR);
++			}
+ 			pb = paste_get_top(&bufname);
++		}
+ 		if (pb == NULL) {
+ 			cmdq_error(item, "no buffer");
+ 			return (CMD_RETURN_ERROR);
+@@ -80,8 +85,13 @@ cmd_set_buffer_exec(struct cmd *self, struct cmdq_item *item)
+ 	}
+ 
+ 	if (args_has(args, 'n')) {
+-		if (pb == NULL)
++		if (pb == NULL) {
++			if (bufname != NULL) {
++				cmdq_error(item, "unknown buffer: %s", bufname);
++				return (CMD_RETURN_ERROR);
++			}
+ 			pb = paste_get_top(&bufname);
++		}
+ 		if (pb == NULL) {
+ 			cmdq_error(item, "no buffer");
+ 			return (CMD_RETURN_ERROR);
