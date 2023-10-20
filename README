@@ -1,86 +1,65 @@
-Welcome to tmux!
+Welcome to Nibious `tmux` Package for Ubuntu
+==========================================
 
-tmux is a terminal multiplexer: it enables a number of terminals to be created,
-accessed, and controlled from a single screen. tmux may be detached from a
+## Background
+
+`tmux` is a terminal multiplexer: it enables a number of terminals to be created,
+accessed, and controlled from a single screen. `tmux` may be detached from a
 screen and continue running in the background, then later reattached.
 
-This release runs on OpenBSD, FreeBSD, NetBSD, Linux, macOS and Solaris.
+Normally you can install `tmux` via a package manager and have it work nicely.
+The issue is that the debian packages are compiled with `utempter` support.
 
-* Dependencies
+`utempter` is a privileged helper used by libutempter library to manipulate utmp
+and wtmp files. The libutempter library provides interface for terminal
+emulators such as screen and xterm to record user sessions to utmp and wtmp
+files.
 
-tmux depends on libevent 2.x, available from:
+The issue is when you log into a machine, type `users`, and see too many users
+"signed in". This happens for each panel that is opened by tmux. This can cause
+problems if your organization limits the amount of times your user can be signed
+in at once.
 
-	https://github.com/libevent/libevent/releases/latest
+## Purpose
 
-It also depends on ncurses, available from:
+This repository will build a `tmux` `.deb` package so that you can install
+`tmux` without the `utempter` library.
 
-	https://invisible-mirror.net/archives/ncurses/
+## Usage
 
-To build tmux, a C compiler (for example gcc or clang), make, pkg-config and a
-suitable yacc (yacc or bison) are needed.
+First, modify the `Dockerfile` to be the OS version that you want.
 
-* Installation
+Then, build the container:
 
-To build and install tmux from a release tarball, use:
+```bash
+docker build . -t dpkg:tmux
+```
 
-	$ ./configure && make
-	$ sudo make install
+And run the container:
 
-tmux can use the utempter library to update utmp(5), if it is installed - run
-configure with --enable-utempter to enable this.
+```bash
+docker run --rm -it dpkg:tmux
+```
 
-To get and build the latest from version control - note that this requires
-autoconf, automake and pkg-config:
+If building older than Ubuntu 22.04, use the `ubuntu18.04` branch:
 
-	$ git clone https://github.com/tmux/tmux.git
-	$ cd tmux
-	$ sh autogen.sh
-	$ ./configure && make
+```bash
+git checkout ubuntu18.04
+```
 
-* Contributing
+And build the `.deb` package:
 
-Bug reports, feature suggestions and especially code contributions are most
-welcome. Please send by email to:
+```bash
+dpkg-buildpackage -b
+```
 
-	tmux-users@googlegroups.com
+Then copy the `.deb` package out of the container:
 
-Or open a GitHub issue or pull request.
+```bash
+# on host
+docker cp <containerID>/package/tmux_3.3a-3_amd64.deb .
+```
 
-* Documentation
+And you have your package! 
 
-For documentation on using tmux, see the tmux.1 manpage. View it from the
-source tree with:
-
-	$ nroff -mdoc tmux.1|less
-
-A small example configuration is in example_tmux.conf.
-
-Other documentation is available in the wiki:
-
-	https://github.com/tmux/tmux/wiki
-
-Also see the tmux FAQ at:
-
-	https://github.com/tmux/tmux/wiki/FAQ
-
-A bash(1) completion file is at:
-
-	https://github.com/imomaliev/tmux-bash-completion
-
-For debugging, run tmux with -v and -vv to generate server and client log files
-in the current directory.
-
-* Support
-
-The tmux mailing list for general discussion and bug reports is:
-
-	https://groups.google.com/forum/#!forum/tmux-users
-
-Subscribe by sending an email to:
-
-	tmux-users+subscribe@googlegroups.com
-
-* License
-
-This file and the CHANGES files are licensed under the ISC license. All other
-files have a license and copyright notice at their start.
+**Note**: You will have to build a deb per release of the OS.
