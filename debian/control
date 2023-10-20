@@ -3,9 +3,9 @@ Section: admin
 Priority: optional
 Maintainer: Owen Parkins <oparkins@nibious.com>
 Build-Depends: bison,
-               debhelper-compat (= 13),
+               debhelper-compat (= 11),
                dpkg-dev (>= 1.16.1~),
-               libevent-dev (>> 2.0.10),
+               libevent-dev (>> 2.0.8),
                libncurses5-dev,
                libutil-freebsd-dev [kfreebsd-any],
                pkg-config
